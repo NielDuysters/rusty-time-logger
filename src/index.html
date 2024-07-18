@@ -1,0 +1,45 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="app.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Time Logger</title>
+    <script type="module" src="/main.js" defer></script>
+  </head>
+
+  <body>
+    <div id="top-bar">
+        <div class="top-bar-section" id="project-id">
+            <div id="project-select-container">
+                <span id="project-selected">PROJECT</span>
+                <div id="project-select-dropdown">
+                    <div class="project-select-dropdown-item" id="project-add-new-container">
+                        <input type="text" value="NEW PROJECT" class="transparent-input" id="project-add-new-input">
+                        <div id="project-add-new-button">ADD</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="top-bar-section" id="task-description">
+            <input type="text" value="TASK DESCRIPTION" class="transparent-input" id="task-description-input">
+        </div>
+        <div class="top-bar-section" id="exit">
+            EXIT
+        </div>
+    </div>
+    <div id="total-time-spent-container">
+        <span class="label">Total time spent:</span>
+        <span class="value" id="total-time-spent">00:00:00</span>
+    </div>
+    <div class="container">
+        <img id="play-button" alt=">" title="Start time" src="assets/play-button.png">
+        <span id="time">00:00:00</span>
+        <button id="save-button">Save</button>
+
+        <div id="finished-tasks-table"></div>
+    </div>
+  </body>
+</html>

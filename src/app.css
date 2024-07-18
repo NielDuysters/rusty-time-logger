@@ -1,0 +1,168 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#top-bar {
+    display: grid;
+    grid-template-columns: 200px 1fr 80px;
+}
+
+#top-bar .top-bar-section {
+    text-align: center;
+    padding: 5px 0;
+}
+
+#top-bar #project-id {
+    background-color: #2E2EFE;
+}
+
+#project-select-container {
+    position: relative;
+    cursor: default;
+}
+
+#project-selected {
+    display: block;
+}
+
+#project-select-dropdown {
+    position: absolute;
+    width: 100%;
+    text-align: left;
+    height: 0;
+    overflow: hidden;
+}
+
+#project-select-dropdown.open {
+    height: auto;
+    max-height: 200px;
+    overflow-y: scroll;
+}
+
+#project-select-dropdown .project-select-dropdown-item {
+    display: grid;
+    grid-template-columns: 1fr 50px;
+    background-color: #AEB404;
+}
+
+#project-select-dropdown .project-select-dropdown-item > * {
+    padding: 7px 10px;
+    box-sizing: border-box;
+    text-transform: uppercase;
+}
+
+#project-select-dropdown .project-select-dropdown-item > span {
+    overflow-x: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#project-add-new-button {
+    background-color: #298A08;
+}
+
+.project-delete-button {
+    background-color: #FF0000;
+}
+
+#project-select-dropdown .project-select-dropdown-item#project-add-new-container {
+    background-color: #2F2A2A;
+}
+
+#project-add-new-input {
+    width: 100%;
+}
+
+#top-bar #task-description {
+    background-color: #2F2A2A;
+    padding-right: 130px;
+    box-sizing: border-box;
+}
+
+.transparent-input {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    outline: 0;
+    border: 0;
+    box-shadow: none;
+}
+
+#task-description-input {
+    text-align: center;
+    width: 100%;
+    margin-left: 10px
+}
+
+#top-bar #exit {
+    background-color: #FF4000;
+}
+
+#total-time-spent-container {
+    padding: 10px 7px;
+}
+
+#total-time-spent-container .label {
+    font-weight: 600;
+}
+
+#play-button {
+    width: 85px;
+    margin: auto;
+    filter: grayscale(10%);
+}
+
+#play-button:hover {
+    filter: grayscale(0);
+}
+
+#time {
+    display: block;
+    margin-top: 15px;
+}
+
+#save-button {
+    width: auto;
+    align-self: center;
+    font-size: 0.9em;
+    text-transform: lowercase;
+    background-color: #FF8000;
+    margin-top: 10px;
+    filter: grayscale(10%);
+    visibility: hidden;
+}
+
+#save-button.visible { visibility: visible; }
+
+#save-button:hover {
+    filter: grayscale(0);
+}
+
+#finished-tasks-table {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr 50px;
+    text-align: left;
+    background-color: #2F2A2A;
+    margin-top: 50px;
+    overflow-y: auto;
+    flex-grow: 1;
+    padding-bottom: 50px;
+    padding-left: 10%;
+    padding-right: 10%;
+    padding-top: 15px;
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    box-sizing: border-box;
+}
+
+#finished-tasks-table .table-header {
+    font-weight: 600;
+    padding-bottom: 10px;
+}
+
+#finished-tasks-table .delete-button-image {
+    width: 24px;
+    position: relative;
+    top: -3px;
+}
