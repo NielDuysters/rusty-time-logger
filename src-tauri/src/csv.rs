@@ -1,9 +1,11 @@
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 
+use super::config;
+
 pub fn save(project_id: &str, row_id: &str, date: &str, task_description: &str, seconds: u64) {
-    let csv_file_path_str = format!("../../timelogs/{}", project_id);
-    let csv_file_path = std::path::Path::new(&*csv_file_path_str);
+    let csv_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
+    let csv_file_path = std::path::Path::new(&*csv_file_path);
     std::fs::create_dir_all(csv_file_path.parent().unwrap()).unwrap();
 
     let mut csv_file = OpenOptions::new()
@@ -25,7 +27,7 @@ pub fn save(project_id: &str, row_id: &str, date: &str, task_description: &str, 
 }
 
 pub fn read(project_id: &str) -> std::vec::Vec<std::vec::Vec<String>> {
-    let csv_file_path = format!("../../timelogs/{}", project_id);
+    let csv_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
     let csv_file = std::fs::File::open(&*csv_file_path).expect("Couldn't open file");
     let reader = std::io::BufReader::new(csv_file);
 

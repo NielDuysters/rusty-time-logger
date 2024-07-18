@@ -8,12 +8,34 @@ use chrono::prelude::*;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 
+mod config;
 mod csv;
 
 struct IsPlayingState(Arc<(Mutex<bool>, Condvar)>);
 struct FirstClickState(Arc<Mutex<bool>>);
 struct SecondsState(Arc<Mutex<u64>>);
 struct ResetState(Arc<Mutex<bool>>);
+
+fn new_project_if_none() {
+    match std::fs::read_dir(std::path::Path::new(&config::RUSTY_TIME_LOGGER_PATH.as_str())) {
+        Ok(mut dir) => {
+            if dir.next().is_some() {
+                return;
+            }
+        },
+        Err(_) => {}
+    }
+
+    let rusty_time_logger_path = &*format!("{}/timelogs/PROJECT", (*config::RUSTY_TIME_LOGGER_PATH).to_string());
+    let project_file_path = std::path::Path::new(rusty_time_logger_path);
+    std::fs::create_dir_all(project_file_path.parent().unwrap()).expect("error");
+    std::fs::File::create(rusty_time_logger_path).expect("error");
+
+    let rusty_initialize_file_path = &*format!("{}/.selected-project", (*config::RUSTY_TIME_LOGGER_PATH).to_string());
+    let mut rusty_initialize_file = std::fs::File::create(rusty_initialize_file_path).expect("error");
+    rusty_initialize_file.write_all("PROJECT".as_bytes()).expect("error");
+
+}
 
 fn counter(tx: mpsc::Sender<u64>, is_playing: Arc<(Mutex<bool>, Condvar)>, reset: Arc<Mutex<bool>>) {
     let mut start_time: std::time::Instant = std::time::Instant::now();
@@ -114,7 +136,8 @@ fn delete_task(task_id: &str, app_handle: tauri::AppHandle) {
 #[tauri::command]
 fn load_projects(app_handle: tauri::AppHandle) {
     let mut project_files : std::vec::Vec<String> = std::vec::Vec::new();
-    for file in std::fs::read_dir("../../timelogs").unwrap() {
+    let project_directory = &*format!("{}/timelogs", (*config::RUSTY_TIME_LOGGER_PATH).to_string());
+    for file in std::fs::read_dir(project_directory).unwrap() {
         project_files.push(file.unwrap().file_name().to_string_lossy().to_string());
     }
     
@@ -125,8 +148,8 @@ fn load_projects(app_handle: tauri::AppHandle) {
 
 #[tauri::command]
 fn create_new_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<(), String> {
-    let project_file_path_str = format!("../../timelogs/{}", project_id.to_uppercase());
-    let project_file_path = std::path::Path::new(&*project_file_path_str);
+    let project_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id.to_uppercase());
+    let project_file_path = std::path::Path::new(&*project_file_path);
 
     if project_file_path.exists() {
         return Err("A project with this name already exists.".to_string());
@@ -146,8 +169,8 @@ fn create_new_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<
 
 #[tauri::command]
 fn delete_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<(), String> {
-    let project_file_path_str = format!("../../timelogs/{}", project_id);
-    let project_file_path = std::path::Path::new(&*project_file_path_str);
+    let project_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
+    let project_file_path = std::path::Path::new(&*project_file_path);
     
     if let Err(_) = std::fs::remove_file(project_file_path) {
         return Err("Couldn't delete project.".to_string());
@@ -159,7 +182,8 @@ fn delete_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<(), 
 
 #[tauri::command]
 fn select_project(project_id: &str, app_handle: tauri::AppHandle) {
-    let selected_project_file_path = std::path::Path::new("../../.rustytimelogger-selected-project");
+    let selected_project_file_path = &*format!("{}/.selected-project", (*config::RUSTY_TIME_LOGGER_PATH).to_string());
+    let selected_project_file_path = std::path::Path::new(selected_project_file_path);
     let mut selected_project_file = OpenOptions::new()
         .write(true)
         .create(true)
@@ -172,10 +196,12 @@ fn select_project(project_id: &str, app_handle: tauri::AppHandle) {
 }
 
 fn get_selected_project() -> String {
-    std::fs::read_to_string(std::path::Path::new("../../.rustytimelogger-selected-project")).expect("Couldn't get selected project")
+    std::fs::read_to_string(std::path::Path::new(&*format!("{}/.selected-project", (*config::RUSTY_TIME_LOGGER_PATH).to_string()))).expect("Couldn't get selected project")
 }
 
 fn main() {
+    new_project_if_none();
+
     let is_playing = Arc::new((Mutex::new(false), Condvar::new()));
     let first_click = Arc::new(Mutex::new(true));
     let seconds = Arc::new(Mutex::new(0));
