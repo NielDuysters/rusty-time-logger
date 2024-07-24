@@ -199,6 +199,11 @@ fn get_selected_project() -> String {
     std::fs::read_to_string(std::path::Path::new(&*format!("{}/.selected-project", (*config::RUSTY_TIME_LOGGER_PATH).to_string()))).expect("Couldn't get selected project")
 }
 
+#[tauri::command]
+fn exit(app_handle: tauri::AppHandle) {
+    std::process::exit(0);
+}
+
 fn main() {
     new_project_if_none();
 
@@ -212,7 +217,7 @@ fn main() {
         .manage(FirstClickState(first_click))
         .manage(SecondsState(seconds))
         .manage(ResetState(reset))
-        .invoke_handler(tauri::generate_handler![play, save, update_finished_tasks, delete_task, create_new_project, load_projects, delete_project, select_project])
+        .invoke_handler(tauri::generate_handler![play, save, update_finished_tasks, delete_task, create_new_project, load_projects, delete_project, select_project, exit])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

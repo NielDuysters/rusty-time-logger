@@ -42,6 +42,10 @@ async function selectProject(projectId) {
     await invoke("select_project", { projectId });
 }
 
+async function exitProgram() {
+    await invoke("exit");
+}
+
 function hisToSeconds(timeString) {
     console.log(timeString);
     const [hours, minutes, seconds] = timeString.split(':').map(Number);
@@ -98,7 +102,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
     exitButton.addEventListener("click", () => {
-        
+        exitProgram();
     });
 
     listen("update_time", (event) => {
