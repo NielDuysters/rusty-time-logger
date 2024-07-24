@@ -62,6 +62,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const projectAddNewButton = document.getElementById("project-add-new-button");
     const projectSelectDropdown = document.getElementById("project-select-dropdown");
     const projectAddNewInput = document.getElementById("project-add-new-input");
+    const exitButton = document.getElementById("exit");
 
     playButton.addEventListener("click", (e) => {
         e.preventDefault();
@@ -94,6 +95,10 @@ window.addEventListener("DOMContentLoaded", async () => {
 
     projectAddNewButton.addEventListener("click", async () => {
         await createNewProject(projectAddNewInput.value);
+    });
+
+    exitButton.addEventListener("click", () => {
+        
     });
 
     listen("update_time", (event) => {
