@@ -47,11 +47,11 @@ pub fn read(project_id: &str) -> std::vec::Vec<std::vec::Vec<String>> {
 }
 
 pub fn delete(project_id: &str, task_id: &str) {
-    let csv_file_path = format!("../../timelogs/{}", project_id);
+    let csv_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
     let csv_file = std::fs::File::open(&*csv_file_path).expect("Couldn't open file");
     let reader = std::io::BufReader::new(csv_file);
 
-    let temp_file_path = format!("../../timelogs/{}.tmp", project_id);
+    let temp_file_path = &*format!("{}/timelogs/.{}.tmp", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
     let temp_file = std::fs::File::create(&temp_file_path).expect("Couldn't create temporary file");
     let mut writer = std::io::BufWriter::new(temp_file);
 

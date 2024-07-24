@@ -17,7 +17,7 @@ struct SecondsState(Arc<Mutex<u64>>);
 struct ResetState(Arc<Mutex<bool>>);
 
 fn new_project_if_none() {
-    match std::fs::read_dir(std::path::Path::new(&config::RUSTY_TIME_LOGGER_PATH.as_str())) {
+    match std::fs::read_dir(std::path::Path::new(format!("{}/timelogs", (*config::RUSTY_TIME_LOGGER_PATH)).as_str())) {
         Ok(mut dir) => {
             if dir.next().is_some() {
                 return;
