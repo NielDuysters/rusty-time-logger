@@ -200,7 +200,7 @@ fn get_selected_project() -> String {
 }
 
 #[tauri::command]
-fn exit(app_handle: tauri::AppHandle) {
+fn exit(app_handle: tauri::AppHandle, is_playing: State<IsPlayingState>) {
     std::process::exit(0);
 }
 

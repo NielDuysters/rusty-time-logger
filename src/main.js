@@ -101,8 +101,9 @@ window.addEventListener("DOMContentLoaded", async () => {
         await createNewProject(projectAddNewInput.value);
     });
 
-    exitButton.addEventListener("click", () => {
-        exitProgram();
+    exitButton.addEventListener("click", async () => {
+        await save(taskDescriptionInput.value);
+        await exitProgram();
     });
 
     listen("update_time", (event) => {
