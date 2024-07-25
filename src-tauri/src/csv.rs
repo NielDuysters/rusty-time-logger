@@ -3,32 +3,33 @@ use std::io::prelude::*;
 
 use super::config;
 
-pub fn save(project_id: &str, row_id: &str, date: &str, task_description: &str, seconds: u64) {
+pub fn save(project_id: &str, row_id: &str, date: &str, task_description: &str, seconds: u64) -> std::io::Result<()> {
     let csv_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
     let csv_file_path = std::path::Path::new(&*csv_file_path);
-    std::fs::create_dir_all(csv_file_path.parent().unwrap()).unwrap();
+    std::fs::create_dir_all(csv_file_path.parent().unwrap())?;
 
     let mut csv_file = OpenOptions::new()
         .write(true)
         .append(true)
         .create(true)
-        .open(csv_file_path)
-        .unwrap();
+        .open(csv_file_path)?;
 
     let hours = seconds / 3600;
     let minutes = (seconds % 3600) / 60;
     let seconds = seconds % 60;
     let time_string = format!("{:02}:{:02}:{:02}", hours, minutes, seconds);
 
+    writeln!(csv_file, "{},{},{},{}", row_id, date, task_description, time_string)?;
 
-    if let Err(e) = writeln!(csv_file, "{},{},{},{}", row_id, date, task_description, time_string) {
-        eprintln!("Couldn't write to file: {}", e);
-    }
+    Ok(())
 }
 
-pub fn read(project_id: &str) -> std::vec::Vec<std::vec::Vec<String>> {
+pub fn read(project_id: &str) -> Result<std::vec::Vec<std::vec::Vec<String>>, String> {
     let csv_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
-    let csv_file = std::fs::File::open(&*csv_file_path).expect("Couldn't open file");
+    let csv_file = match std::fs::File::open(&*csv_file_path) {
+        Ok(file) => file,
+        Err(_) => return Err("Could not open CSV-file to read".to_string()),
+    };
     let reader = std::io::BufReader::new(csv_file);
 
     let mut csv_content : std::vec::Vec<std::vec::Vec<String>> = std::vec::Vec::new();
@@ -39,20 +40,26 @@ pub fn read(project_id: &str) -> std::vec::Vec<std::vec::Vec<String>> {
                 let line_parts = content.split(',').map(|s| s.to_string()).collect();
                 csv_content.push(line_parts); 
             },
-            Err(e) => eprintln!("Error reading line from csv: {}", e),
+            Err(_) => return Err("Error reading line from CSV".to_string()),
         }
     }
         
-    csv_content
+    Ok(csv_content)
 }
 
-pub fn delete(project_id: &str, task_id: &str) {
+pub fn delete(project_id: &str, task_id: &str) -> Result<(), String> {
     let csv_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
-    let csv_file = std::fs::File::open(&*csv_file_path).expect("Couldn't open file");
+    let csv_file = match std::fs::File::open(&*csv_file_path) {
+        Ok(file) => file,
+        Err(_) => return Err("Could not open CSV-file to delete".to_string()),
+    };
     let reader = std::io::BufReader::new(csv_file);
 
     let temp_file_path = &*format!("{}/timelogs/.{}.tmp", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
-    let temp_file = std::fs::File::create(&temp_file_path).expect("Couldn't create temporary file");
+    let temp_file = match std::fs::File::create(&temp_file_path) {
+        Ok(file) => file,
+        Err(_) => return Err("Could not create temporary file to delete".to_string()),
+    };
     let mut writer = std::io::BufWriter::new(temp_file);
 
 
@@ -64,13 +71,19 @@ pub fn delete(project_id: &str, task_id: &str) {
                     continue;
                 }
 
-                writeln!(writer, "{}", line_parts.join(",")).expect("Couldn't write to temporary file");
+                if let Err(_) = writeln!(writer, "{}", line_parts.join(",")) {
+                    return Err("Could not write line to temporary file to delete".to_string());
+                };
             },
-            Err(e) => eprintln!("Error reading line from csv: {}", e),
+            Err(_) => return Err("Error reading line from CSV to delete".to_string()),
         }
     }
 
     writer.flush().unwrap();
 
-    std::fs::rename(temp_file_path, csv_file_path).expect("Couldn't rename temp file to csv file");
+    if let Err(_) = std::fs::rename(temp_file_path, csv_file_path) {
+        return Ok(());
+    };
+
+    Ok(())
 }

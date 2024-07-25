@@ -125,7 +125,9 @@ fn save(task_description: &str, seconds_state: State<SecondsState>, reset_state:
     let today = Utc::now();
     let date_str = format!("{} {}", today.day(), today.format("%B").to_string());
 
-    csv::save(get_selected_project()?.as_str(), &random_id(12), &*date_str, task_description, *seconds_state_lock);
+    if let Err(_) = csv::save(get_selected_project()?.as_str(), &random_id(12), &*date_str, task_description, *seconds_state_lock) {
+        return Err("Error saving CSV file".to_string());
+    };
     *reset_state_lock = true;
     
     update_finished_tasks(app_handle)?;
@@ -135,7 +137,7 @@ fn save(task_description: &str, seconds_state: State<SecondsState>, reset_state:
 
 #[tauri::command]
 fn update_finished_tasks(app_handle: tauri::AppHandle) -> Result<(), String> {
-    let tasks : std::vec::Vec<std::vec::Vec<String>> = csv::read(get_selected_project()?.as_str());
+    let tasks : std::vec::Vec<std::vec::Vec<String>> = csv::read(get_selected_project()?.as_str())?;
     let tasks_json = match serde_json::to_string(&tasks) {
         Ok(json) => json,
         Err(_) => return Err("Error reading tasks from project file".to_string()),
@@ -149,7 +151,7 @@ fn update_finished_tasks(app_handle: tauri::AppHandle) -> Result<(), String> {
 
 #[tauri::command]
 fn delete_task(task_id: &str, app_handle: tauri::AppHandle) -> Result<(), String> {
-    csv::delete(get_selected_project()?.as_str(), task_id);
+    csv::delete(get_selected_project()?.as_str(), task_id)?;
     update_finished_tasks(app_handle)?;
 
     Ok(())
