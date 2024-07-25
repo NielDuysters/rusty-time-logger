@@ -18,7 +18,7 @@ async function deleteTask(taskId) {
 async function createNewProject(projectId) {
      try {
         await invoke("create_new_project", { projectId });
-//        await message("New project created succesfully.");
+      // await message("New project created succesfully.");
        // await loadProjects();
     } catch (error) {
   //      await message(error);
