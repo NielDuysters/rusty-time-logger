@@ -16,11 +16,11 @@ struct FirstClickState(Arc<Mutex<bool>>);
 struct SecondsState(Arc<Mutex<u64>>);
 struct ResetState(Arc<Mutex<bool>>);
 
-fn new_project_if_none() {
+fn new_project_if_none() -> std::io::Result<()> {
     match std::fs::read_dir(std::path::Path::new(format!("{}/timelogs", (*config::RUSTY_TIME_LOGGER_PATH)).as_str())) {
         Ok(mut dir) => {
             if dir.next().is_some() {
-                return;
+                return Ok(());
             }
         },
         Err(_) => {}
@@ -28,13 +28,14 @@ fn new_project_if_none() {
 
     let rusty_time_logger_path = &*format!("{}/timelogs/PROJECT", (*config::RUSTY_TIME_LOGGER_PATH).to_string());
     let project_file_path = std::path::Path::new(rusty_time_logger_path);
-    std::fs::create_dir_all(project_file_path.parent().unwrap()).expect("error");
-    std::fs::File::create(rusty_time_logger_path).expect("error");
+    std::fs::create_dir_all(project_file_path.parent().unwrap())?;
+    std::fs::File::create(rusty_time_logger_path)?;
 
     let rusty_initialize_file_path = &*format!("{}/.selected-project", (*config::RUSTY_TIME_LOGGER_PATH).to_string());
-    let mut rusty_initialize_file = std::fs::File::create(rusty_initialize_file_path).expect("error");
-    rusty_initialize_file.write_all("PROJECT".as_bytes()).expect("error");
+    let mut rusty_initialize_file = std::fs::File::create(rusty_initialize_file_path)?;
+    rusty_initialize_file.write_all("PROJECT".as_bytes())?;
 
+    Ok(())
 }
 
 fn counter(tx: mpsc::Sender<u64>, is_playing: Arc<(Mutex<bool>, Condvar)>, reset: Arc<Mutex<bool>>) {
@@ -43,8 +44,7 @@ fn counter(tx: mpsc::Sender<u64>, is_playing: Arc<(Mutex<bool>, Condvar)>, reset
     let reset_clone = Arc::clone(&reset);
 
     loop {
-
-        let mut reset_lock = reset_clone.lock().unwrap();
+        let mut reset_lock = reset_clone.lock().expect("Could not set lock on reset state");
         if (*reset_lock) == true {
             start_time = std::time::Instant::now();
             total_pause_seconds = 0;
@@ -53,7 +53,7 @@ fn counter(tx: mpsc::Sender<u64>, is_playing: Arc<(Mutex<bool>, Condvar)>, reset
         drop(reset_lock);
 
         let (lock, cvar) = &*is_playing;
-        let mut playing = lock.lock().unwrap();
+        let mut playing = lock.lock().expect("Could not set lock on playing state");
         
         while !*playing {
             let pause_time: std::time::Instant = std::time::Instant::now();
@@ -78,7 +78,7 @@ fn play(app_handle: tauri::AppHandle, is_playing: State<IsPlayingState>, first_c
     let reset_state_clone = Arc::clone(&reset_state.0);
 
     let (lock, cvar) = &*is_playing.0;
-    let mut playing = lock.lock().unwrap();
+    let mut playing = lock.lock().expect("Could not set lock on playing state");
     *playing = !*playing;
     if *playing {
         cvar.notify_one();
@@ -91,8 +91,13 @@ fn play(app_handle: tauri::AppHandle, is_playing: State<IsPlayingState>, first_c
 
         std::thread::spawn(move || {
             while let Ok(seconds) = rx.recv() {
-                app_handle.emit_all("update_time", seconds).expect("Failed to emit seconds");
-                let mut seconds_state_lock = seconds_state_clone.lock().unwrap();
+                if let Err(_) = app_handle.emit_all("update_time", seconds) {
+                    continue;
+                }
+                let mut seconds_state_lock = match seconds_state_clone.lock() {
+                    Ok(ssl) => ssl,
+                    Err(_) => continue,
+                };
                 *seconds_state_lock = seconds;
             }
         });
@@ -102,48 +107,71 @@ fn play(app_handle: tauri::AppHandle, is_playing: State<IsPlayingState>, first_c
 }
 
 #[tauri::command]
-fn save(task_description: &str, seconds_state: State<SecondsState>, reset_state: State<ResetState>, app_handle: tauri::AppHandle) {
+fn save(task_description: &str, seconds_state: State<SecondsState>, reset_state: State<ResetState>, app_handle: tauri::AppHandle) -> Result<(), String> {
     fn random_id(l: usize) -> String {
         let mut rng = thread_rng();
         (0..l).map(|_| rng.sample(Alphanumeric) as char).collect()
     }
 
-    let seconds_state_lock = seconds_state.0.lock().unwrap();
-    let mut reset_state_lock = reset_state.0.lock().unwrap();
+    let seconds_state_lock = match seconds_state.0.lock() {
+        Ok(ssl) => ssl,
+        Err(_) => return Err("Error saving task".to_string()),
+    };
+    let mut reset_state_lock = match reset_state.0.lock() {
+        Ok(rsl) => rsl,
+        Err(_) => return Err("Error saving task".to_string()),
+    };
 
     let today = Utc::now();
     let date_str = format!("{} {}", today.day(), today.format("%B").to_string());
 
-    csv::save(get_selected_project().as_str(), &random_id(12), &*date_str, task_description, *seconds_state_lock);
+    csv::save(get_selected_project()?.as_str(), &random_id(12), &*date_str, task_description, *seconds_state_lock);
     *reset_state_lock = true;
     
-    update_finished_tasks(app_handle);
+    update_finished_tasks(app_handle)?;
+
+    Ok(())
 }
 
 #[tauri::command]
-fn update_finished_tasks(app_handle: tauri::AppHandle) {
-    let tasks : std::vec::Vec<std::vec::Vec<String>> = csv::read(get_selected_project().as_str());
-    let tasks_json = serde_json::to_string(&tasks).expect("Failed to serialize tasks");
-    app_handle.emit_all("finished_tasks", tasks_json).expect("Failed to emit tasks");
+fn update_finished_tasks(app_handle: tauri::AppHandle) -> Result<(), String> {
+    let tasks : std::vec::Vec<std::vec::Vec<String>> = csv::read(get_selected_project()?.as_str());
+    let tasks_json = match serde_json::to_string(&tasks) {
+        Ok(json) => json,
+        Err(_) => return Err("Error reading tasks from project file".to_string()),
+    };
+    if let Err(_) = app_handle.emit_all("finished_tasks", tasks_json) {
+        return Err("Failed to emit tasks".to_string());
+    };
+
+    Ok(())
 }
 
 #[tauri::command]
-fn delete_task(task_id: &str, app_handle: tauri::AppHandle) {
-    csv::delete(get_selected_project().as_str(), task_id);
-    update_finished_tasks(app_handle);
+fn delete_task(task_id: &str, app_handle: tauri::AppHandle) -> Result<(), String> {
+    csv::delete(get_selected_project()?.as_str(), task_id);
+    update_finished_tasks(app_handle)?;
+
+    Ok(())
 }
 
 #[tauri::command]
-fn load_projects(app_handle: tauri::AppHandle) {
+fn load_projects(app_handle: tauri::AppHandle) -> Result<(), String> {
     let mut project_files : std::vec::Vec<String> = std::vec::Vec::new();
     let project_directory = &*format!("{}/timelogs", (*config::RUSTY_TIME_LOGGER_PATH).to_string());
-    for file in std::fs::read_dir(project_directory).unwrap() {
+    let project_directory_content = match std::fs::read_dir(project_directory) {
+        Ok(content) => content,
+        Err(_) => return Err("Error reading projects from timelogs directory.".to_string()),
+    };
+    for file in project_directory_content {
         project_files.push(file.unwrap().file_name().to_string_lossy().to_string());
     }
     
     let project_files_json = serde_json::to_string(&project_files).expect("Failed to serialize project files");
     app_handle.emit_all("project_list", project_files_json).expect("Failed to emit project list");
-    app_handle.emit_all("selected_project", get_selected_project()).expect("Failed to emit selected project");
+    app_handle.emit_all("selected_project", get_selected_project()?).expect("Failed to emit selected project");
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -163,7 +191,8 @@ fn create_new_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<
         return Err("Couldn't create project.".to_string());
     }
 
-    load_projects(app_handle);
+    load_projects(app_handle)?;
+    
     Ok(())
 }
 
@@ -176,36 +205,48 @@ fn delete_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<(), 
         return Err("Couldn't delete project.".to_string());
     }
     
-    load_projects(app_handle);
+    load_projects(app_handle)?;
+    
     Ok(())
 }
 
 #[tauri::command]
-fn select_project(project_id: &str, app_handle: tauri::AppHandle) {
+fn select_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<(), String> {
     let selected_project_file_path = &*format!("{}/.selected-project", (*config::RUSTY_TIME_LOGGER_PATH).to_string());
     let selected_project_file_path = std::path::Path::new(selected_project_file_path);
-    let mut selected_project_file = OpenOptions::new()
+    let mut selected_project_file = match OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(true)
-        .open(selected_project_file_path).expect("Couldn't set selected project");
-    selected_project_file.write_all(project_id.as_bytes()).expect("Couldn't set selected project");
+        .open(selected_project_file_path) {
+            Ok(file) => file,
+            Err(_) => return Err("Couldn't open selected project file".to_string()),
+        };
     
-    update_finished_tasks(app_handle.clone());
-    load_projects(app_handle);
+    if let Err(_) = selected_project_file.write_all(project_id.as_bytes()) {
+        return Err("Couldn't set selected project".to_string());
+    };
+    
+    update_finished_tasks(app_handle.clone())?;
+    load_projects(app_handle)?;
+
+    Ok(())
 }
 
-fn get_selected_project() -> String {
-    std::fs::read_to_string(std::path::Path::new(&*format!("{}/.selected-project", (*config::RUSTY_TIME_LOGGER_PATH).to_string()))).expect("Couldn't get selected project")
+fn get_selected_project() -> Result<String, String> {
+    match std::fs::read_to_string(std::path::Path::new(&*format!("{}/.selected-project", (*config::RUSTY_TIME_LOGGER_PATH).to_string()))) {
+        Ok(project) => Ok(project),
+        Err(_) => return Err("Could not select project".to_string()),
+    }
 }
 
 #[tauri::command]
-fn exit(app_handle: tauri::AppHandle, is_playing: State<IsPlayingState>) {
+fn exit() {
     std::process::exit(0);
 }
 
 fn main() {
-    new_project_if_none();
+    new_project_if_none().expect("Could not create new project.");
 
     let is_playing = Arc::new((Mutex::new(false), Condvar::new()));
     let first_click = Arc::new(Mutex::new(true));
