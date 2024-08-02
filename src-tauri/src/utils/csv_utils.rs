@@ -1,7 +1,7 @@
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 
-use super::config;
+use super::super::config;
 
 pub fn save(project_id: &str, row_id: &str, date: &str, task_description: &str, seconds: u64) -> std::io::Result<()> {
     let csv_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);

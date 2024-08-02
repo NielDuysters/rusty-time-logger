@@ -1,7 +1,7 @@
 use std::sync::{mpsc, Arc, Mutex, Condvar};
 use std::io::prelude::*;
 
-use super::config;
+use super::super::config;
 
 pub fn new_project_if_none() -> std::io::Result<()> {
     match std::fs::read_dir(std::path::Path::new(format!("{}/timelogs", (*config::RUSTY_TIME_LOGGER_PATH)).as_str())) {

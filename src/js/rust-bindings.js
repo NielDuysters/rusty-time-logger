@@ -4,8 +4,8 @@ export async function play() {
     await invoke("play");
 }
 
-export async function save(taskDescription) {
-    await invoke("save", { taskDescription });
+export async function save(description) {
+    await invoke("save", { description });
 }
 
 export async function deleteTask(taskId) {
