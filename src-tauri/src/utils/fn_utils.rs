@@ -1,4 +1,3 @@
-use std::sync::{mpsc, Arc, Mutex, Condvar};
 use std::io::prelude::*;
 
 use super::super::config;
@@ -23,37 +22,6 @@ pub fn new_project_if_none() -> std::io::Result<()> {
     rusty_initialize_file.write_all("PROJECT".as_bytes())?;
 
     Ok(())
-}
-
-pub fn counter(tx: mpsc::Sender<u64>, is_playing: Arc<(Mutex<bool>, Condvar)>, reset: Arc<Mutex<bool>>) {
-    let mut start_time: std::time::Instant = std::time::Instant::now();
-    let mut total_pause_seconds: u64 = 0;
-    let reset_clone = Arc::clone(&reset);
-
-    loop {
-        let mut reset_lock = reset_clone.lock().expect("Could not set lock on reset state");
-        if (*reset_lock) == true {
-            start_time = std::time::Instant::now();
-            total_pause_seconds = 0;
-            *reset_lock = false;
-        }
-        drop(reset_lock);
-
-        let (lock, cvar) = &*is_playing;
-        let mut playing = lock.lock().expect("Could not set lock on playing state");
-        
-        while !*playing {
-            let pause_time: std::time::Instant = std::time::Instant::now();
-            playing = cvar.wait(playing).unwrap();
-            total_pause_seconds += (std::time::Instant::now()).duration_since(pause_time).as_secs();
-        }
-
-        if *playing {
-            let seconds: u64 = (std::time::Instant::now()).duration_since(start_time).as_secs() - total_pause_seconds;
-            tx.send(seconds).expect("Failed to transmit seconds");
-            std::thread::sleep(std::time::Duration::from_millis(35));
-        }
-    }
 }
 
 pub fn get_selected_project() -> Result<String, String> {

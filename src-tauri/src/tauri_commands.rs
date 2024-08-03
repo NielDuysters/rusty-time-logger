@@ -1,20 +1,8 @@
-use tauri::State;
-use std::sync::{Arc, Mutex, Condvar};
 use super::services::{project_service, task_service, action_service};
 
-pub struct IsPlayingState(pub Arc<(Mutex<bool>, Condvar)>);
-pub struct FirstClickState(pub Arc<Mutex<bool>>);
-pub struct SecondsState(pub Arc<Mutex<u64>>);
-pub struct ResetState(pub Arc<Mutex<bool>>);
-
 #[tauri::command]
-pub fn play(app_handle: tauri::AppHandle, is_playing: State<IsPlayingState>, first_click: State<FirstClickState>, seconds_state: State<SecondsState>, reset_state: State<ResetState>) -> Result<(), String> {
-    action_service::play(&app_handle, &is_playing, &first_click, &seconds_state, &reset_state)
-}
-
-#[tauri::command]
-pub fn save(description: &str, seconds_state: State<SecondsState>, reset_state: State<ResetState>, app_handle: tauri::AppHandle) -> Result<(), String> {
-    action_service::save(description, &seconds_state, &reset_state, &app_handle)
+pub fn save(ms: u64, description: &str, app_handle: tauri::AppHandle) -> Result<(), String> {
+    action_service::save(ms, description, &app_handle)
 }
 
 #[tauri::command]

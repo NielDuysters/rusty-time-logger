@@ -54,8 +54,6 @@ impl Project {
         if let Err(_) = selected_project_file.write_all(self.id.as_bytes()) {
             return Err("Couldn't set selected project".to_string());
         };
-        
-        //update_finished_tasks(app_handle.clone())?;
 
         Ok(())
     }

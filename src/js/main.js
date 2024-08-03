@@ -2,16 +2,19 @@ const { message } = window.__TAURI__.dialog;
 const { listen } = window.__TAURI__.event;
 const { invoke } = window.__TAURI__.tauri;
 
-import { play, save, deleteTask, createNewProject, deleteProject, loadProjects, selectProject, exitProgram } from "./rust-bindings.js";
+import { save, deleteTask, createNewProject, deleteProject, loadProjects, selectProject, exitProgram } from "./rust-bindings.js";
 import { togglePlayPause, saveTask, showProjectDropdown, createNewProjectFromProjectDropdown, exitProgramAfterClick } from "./event-functions.js";
 import { playButton, saveButton, projectSelectedSpan, projectAddNewButton, exitButton } from "./dom-elements.js";
-import { updateTimeListener, finishedTasksListener, projectListListener, selectedProjectListener } from "./rust-listeners.js";
+import { finishedTasksListener, projectListListener, selectedProjectListener } from "./rust-listeners.js";
 
 
 window.addEventListener("DOMContentLoaded", () => {
     let state = {
         isPlaying: false,
-        totalSecondsSpent: 0,
+        totalMilliSecondsSpent: 0,
+        taskMilliSecondsSpent: 0,
+        startTime: null,
+        firstClick: true,
     };
 
     playButton.addEventListener("click", (e) => {
@@ -19,7 +22,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     saveButton.addEventListener("click", () => {
-        saveTask();
+        saveTask(state);
     });
     
     projectSelectedSpan.addEventListener("click", () => {
@@ -31,11 +34,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     exitButton.addEventListener("click", () => {
-        exitProgramAfterClick();
-    });
-
-    listen("update_time", (event) => {
-        updateTimeListener(event, state);
+        exitProgramAfterClick(state);
     });
 
     listen("finished_tasks", (event) => {

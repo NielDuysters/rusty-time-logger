@@ -20,8 +20,6 @@ impl Task {
         if let Err(_) = csv_utils::save(fn_utils::get_selected_project()?.as_str(), &self.id, &*date_str, task_description, seconds) {
             return Err("Error saving CSV file".to_string());
         };
-        
-        //update_finished_tasks(app_handle)?;
 
         Ok(())
     }

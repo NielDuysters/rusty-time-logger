@@ -1,11 +1,8 @@
 const { invoke } = window.__TAURI__.tauri;
+const { message } = window.__TAURI__.dialog;
 
-export async function play() {
-    await invoke("play");
-}
-
-export async function save(description) {
-    await invoke("save", { description });
+export async function save(ms, description) {
+    await invoke("save", {ms, description });
 }
 
 export async function deleteTask(taskId) {
@@ -14,11 +11,12 @@ export async function deleteTask(taskId) {
 
 export async function createNewProject(projectId) {
      try {
+      // message("New project created succesfully.");
         await invoke("create_new_project", { projectId });
-      // await message("New project created succesfully.");
        // await loadProjects();
     } catch (error) {
-  //      await message(error);
+        //await message(error);
+        
     }
 }
 
@@ -27,7 +25,7 @@ export async function deleteProject(projectId) {
         await invoke("delete_project", { projectId });
         //await message("Project deleted.");
     } catch (error) {
-        await message(error);
+       // await message(error);
     }
 }
 
