@@ -2,7 +2,7 @@ use tauri::Manager;
 use super::super::config;
 use std::io::prelude::*;
 use std::fs::OpenOptions;
-use super::super::utils::fn_utils;
+use super::super::utils::project;
 
 pub struct Project {
     id: String,
@@ -72,7 +72,7 @@ pub fn refresh(app_handle: &tauri::AppHandle) -> Result<(), String> {
     
     let project_files_json = serde_json::to_string(&project_files).expect("Failed to serialize project files");
     app_handle.emit_all("project_list", project_files_json).expect("Failed to emit project list");
-    app_handle.emit_all("selected_project", fn_utils::get_selected_project()?).expect("Failed to emit selected project");
+    app_handle.emit_all("selected_project", project::get_selected_project()?).expect("Failed to emit selected project");
 
     Ok(())
 }

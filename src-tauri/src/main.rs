@@ -5,10 +5,10 @@ mod tauri_commands;
 mod services;
 mod utils;
 
-use utils::fn_utils;
+use utils::project;
 
 fn main() {
-    fn_utils::new_project_if_none().expect("Could not create new project.");
+    project::new_project_if_none().expect("Could not create new project.");
 
 
     tauri::Builder::default()

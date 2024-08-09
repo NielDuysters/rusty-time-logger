@@ -1,6 +1,6 @@
 use tauri::Manager;
 use chrono::prelude::*;
-use super::super::utils::{fn_utils, csv_utils};
+use super::super::utils::{project, csv};
 
 pub struct Task {
     id: String
@@ -17,7 +17,7 @@ impl Task {
         let today = Utc::now();
         let date_str = format!("{} {}", today.day(), today.format("%B").to_string());
 
-        if let Err(_) = csv_utils::save(fn_utils::get_selected_project()?.as_str(), &self.id, &*date_str, task_description, seconds) {
+        if let Err(_) = csv::save(project::get_selected_project()?.as_str(), &self.id, &*date_str, task_description, seconds) {
             return Err("Error saving CSV file".to_string());
         };
 
@@ -25,13 +25,13 @@ impl Task {
     }
 
     pub fn delete(&self) -> Result<(), String> {
-        csv_utils::delete(fn_utils::get_selected_project()?.as_str(), &self.id)
+        csv::delete(project::get_selected_project()?.as_str(), &self.id)
     }
     
 }
 
 pub fn refresh(app_handle: &tauri::AppHandle) -> Result<(), String> {
-    let tasks : std::vec::Vec<std::vec::Vec<String>> = csv_utils::read(fn_utils::get_selected_project()?.as_str())?;
+    let tasks : std::vec::Vec<std::vec::Vec<String>> = csv::read(project::get_selected_project()?.as_str())?;
     let tasks_json = match serde_json::to_string(&tasks) {
         Ok(json) => json,
         Err(_) => return Err("Error reading tasks from project file".to_string()),
