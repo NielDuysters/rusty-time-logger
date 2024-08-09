@@ -4,8 +4,7 @@ use std::io::prelude::*;
 use super::super::config;
 
 pub fn save(project_id: &str, row_id: &str, date: &str, task_description: &str, seconds: u64) -> std::io::Result<()> {
-    let csv_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
-    let csv_file_path = std::path::Path::new(&*csv_file_path);
+    let csv_file_path = config::RUSTY_TIME_LOGGER_PATH.join("timelogs").join(project_id.to_uppercase());
     std::fs::create_dir_all(csv_file_path.parent().unwrap())?;
 
     let mut csv_file = OpenOptions::new()
@@ -25,7 +24,7 @@ pub fn save(project_id: &str, row_id: &str, date: &str, task_description: &str, 
 }
 
 pub fn read(project_id: &str) -> Result<std::vec::Vec<std::vec::Vec<String>>, String> {
-    let csv_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
+    let csv_file_path = config::RUSTY_TIME_LOGGER_PATH.join("timelogs").join(project_id.to_uppercase());
     let csv_file = match std::fs::File::open(&*csv_file_path) {
         Ok(file) => file,
         Err(_) => return Err("Could not open CSV-file to read".to_string()),
@@ -48,15 +47,15 @@ pub fn read(project_id: &str) -> Result<std::vec::Vec<std::vec::Vec<String>>, St
 }
 
 pub fn delete(project_id: &str, task_id: &str) -> Result<(), String> {
-    let csv_file_path = &*format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
+    let csv_file_path = config::RUSTY_TIME_LOGGER_PATH.join("timelogs").join(project_id.to_uppercase());
     let csv_file = match std::fs::File::open(&*csv_file_path) {
         Ok(file) => file,
         Err(_) => return Err("Could not open CSV-file to delete".to_string()),
     };
     let reader = std::io::BufReader::new(csv_file);
 
-    let temp_file_path = &*format!("{}/timelogs/.{}.tmp", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), project_id);
-    let temp_file = match std::fs::File::create(&temp_file_path) {
+    let temp_file_path = config::RUSTY_TIME_LOGGER_PATH.join(".").join(project_id.to_uppercase()).join(".tmp");
+    let temp_file = match std::fs::File::create(temp_file_path.clone()) {
         Ok(file) => file,
         Err(_) => return Err("Could not create temporary file to delete".to_string()),
     };

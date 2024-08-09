@@ -13,7 +13,7 @@ impl Project {
     pub fn new(id: &str) -> Self {
         Self {
             id: id.to_string(),
-            path: std::path::PathBuf::from(format!("{}/timelogs/{}", (*config::RUSTY_TIME_LOGGER_PATH).to_string(), id.to_uppercase())),
+            path: config::RUSTY_TIME_LOGGER_PATH.clone().join("timelogs").join(id.to_uppercase()),
         }
     }
 
@@ -61,7 +61,7 @@ impl Project {
 
 pub fn refresh(app_handle: &tauri::AppHandle) -> Result<(), String> {
     let mut project_files : std::vec::Vec<String> = std::vec::Vec::new();
-    let project_directory = &*format!("{}/timelogs", (*config::RUSTY_TIME_LOGGER_PATH).to_string());
+    let project_directory = config::RUSTY_TIME_LOGGER_PATH.join("timelogs");
     let project_directory_content = match std::fs::read_dir(project_directory) {
         Ok(content) => content,
         Err(_) => return Err("Error reading projects from timelogs directory.".to_string()),
