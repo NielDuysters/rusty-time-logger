@@ -15,7 +15,7 @@ impl Task {
     
     pub fn create(&self, task_description: &str, seconds: u64) -> Result<(), String> {
         let today = Utc::now();
-        let date_str = format!("{} {}", today.day(), today.format("%B").to_string());
+        let date_str = today.format("%e %B").to_string();
 
         if let Err(_) = csv::save(project::get_selected_project()?.as_str(), &self.id, &*date_str, task_description, seconds) {
             return Err("Error saving CSV file".to_string());
