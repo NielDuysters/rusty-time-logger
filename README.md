@@ -1,3 +1,4 @@
+![logo](https://github.com/user-attachments/assets/059b21de-d829-445a-867b-b9bc65e7fb82)
 # Rusty Time Logger
 The fastest time logger application in the world! Built in Rust.
 
