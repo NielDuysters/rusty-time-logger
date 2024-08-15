@@ -12,10 +12,10 @@ I do some freelance web-development and needed a basic and easy-to-use project t
 
 ## Screenshots
 Interface
-![Interface](screenshots/general-interface.jpg)
+![Interface](screenshots/general-interface.png)
 
 Select, add, delete or export projects
-![Project Actions](screenshots/project-actions.jpg)
+![Project Actions](screenshots/project-actions.png)
 
 Export project log
 ![Project log](screenshots/project-export.jpg)
