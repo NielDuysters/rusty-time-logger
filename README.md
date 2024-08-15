@@ -42,7 +42,7 @@ cargo tauri build
 
 # Move bundled file to Applications folder
 # E.g for MacOS:
-cp -r src-tauri/target/release/bundle/macos/rusty-time-logger.app /Applications
+cp -r "src-tauri/target/release/bundle/macos/Rusty Time Logger.app" /Applications
 ```
 
 
