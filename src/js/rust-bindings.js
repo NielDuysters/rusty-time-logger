@@ -16,17 +16,24 @@ export async function createNewProject(projectId) {
        // await loadProjects();
     } catch (error) {
         //await message(error);
-        
+        return;
     }
+
+    await selectProject(projectId);
 }
 
 export async function deleteProject(projectId) {
     try {
         await invoke("delete_project", { projectId });
-        //await message("Project deleted.");
+//        await message("Project deleted.");
     } catch (error) {
        // await message(error);
     }
+}
+
+export async function exportProject(projectId) {
+    await invoke("export_project", { projectId });
+ //   await message("Project exported.");
 }
 
 export async function loadProjects() {

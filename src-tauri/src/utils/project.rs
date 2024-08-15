@@ -1,9 +1,8 @@
 use std::io::prelude::*;
-
 use super::super::config;
 
 pub fn new_project_if_none() -> std::io::Result<()> {
-    match std::fs::read_dir((*config::RUSTY_TIME_LOGGER_PATH).parent().unwrap().join("/timelogs")) {
+    match std::fs::read_dir((*config::RUSTY_TIME_LOGGER_PATH).join("timelogs")) {
         Ok(mut dir) => {
             if dir.next().is_some() {
                 return Ok(());

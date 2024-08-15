@@ -28,7 +28,7 @@ body {
 
 #project-select-dropdown {
     position: absolute;
-    width: 100%;
+    width: 350px;
     text-align: left;
     height: 0;
     overflow: hidden;
@@ -42,8 +42,12 @@ body {
 
 #project-select-dropdown .project-select-dropdown-item {
     display: grid;
-    grid-template-columns: 1fr 50px;
+    grid-template-columns: 1fr 85px 50px;
     background-color: #AEB404;
+}
+
+#project-select-dropdown .project-select-dropdown-item:first-child {
+    grid-template-columns: 1fr 135px;
 }
 
 #project-select-dropdown .project-select-dropdown-item > * {
@@ -60,6 +64,10 @@ body {
 
 #project-add-new-button {
     background-color: #298A08;
+}
+
+.project-export-button {
+    background-color: #2E2EFE;
 }
 
 .project-delete-button {
@@ -142,6 +150,7 @@ body {
 #finished-tasks-table {
     display: grid;
     grid-template-columns: 100px 1fr 1fr 50px;
+    grid-template-rows: 1fr;
     text-align: left;
     background-color: #2F2A2A;
     margin-top: 50px;
@@ -154,6 +163,7 @@ body {
     border-top-left-radius: 25px;
     border-top-right-radius: 25px;
     box-sizing: border-box;
+    min-height: 150px;
 }
 
 #finished-tasks-table .table-header {

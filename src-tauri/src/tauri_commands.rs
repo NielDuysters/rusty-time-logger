@@ -35,7 +35,6 @@ pub fn delete_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<
     project_service::refresh(&app_handle)?;
     
     delete
-
 }
 
 #[tauri::command]
@@ -46,6 +45,14 @@ pub fn select_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<
     task_service::refresh(&app_handle)?;
     
     select
+}
+
+#[tauri::command]
+pub fn export_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<(), String> {
+    let project = project_service::Project::new(project_id);
+    let export = project.export();
+    
+    export
 }
 
 #[tauri::command]

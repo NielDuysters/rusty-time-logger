@@ -1,6 +1,7 @@
 import { timeSpan, totalTimeSpentSpan, finishedTasksTable, projectSelectDropdown, projectSelectedSpan } from "./dom-elements.js";
-import { deleteProject, selectProject, deleteTask } from "./rust-bindings.js";
-
+import { deleteProject, exportProject, selectProject, deleteTask } from "./rust-bindings.js";
+import { displayTotalTimeSpent, hisToMs } from "./utils.js";
+const { message } = window.__TAURI__.dialog;
 
 export function finishedTasksListener(e, state) {
     let tasks = JSON.parse(e.payload).reverse();
@@ -43,9 +44,8 @@ export function finishedTasksListener(e, state) {
         finishedTasksTable.appendChild(spanTime);
         finishedTasksTable.appendChild(spanDeleteButton);
     });
-
-    const time = new Date(state.totalMilliSecondsSpent).toISOString().slice(11, 19);
-    totalTimeSpentSpan.textContent = `${time}`;
+    
+    displayTotalTimeSpent(state.totalMilliSecondsSpent);
 }
 
 export function projectListListener(e) {
@@ -62,15 +62,29 @@ export function projectListListener(e) {
             selectProject(project);
             projectSelectDropdown.classList.remove("open");
         });
+        
+        let projectSelectDropdownItemExportButton = document.createElement("div");
+        projectSelectDropdownItemExportButton.classList.add("project-export-button");
+        projectSelectDropdownItemExportButton.textContent = "EXPORT";
+        projectSelectDropdownItemExportButton.addEventListener("click", () => {
+            exportProject(project);
+            projectSelectDropdown.classList.remove("open");
+        });
 
         let projectSelectDropdownItemDeleteButton = document.createElement("div");
         projectSelectDropdownItemDeleteButton.classList.add("project-delete-button");
         projectSelectDropdownItemDeleteButton.textContent = "DEL";
         projectSelectDropdownItemDeleteButton.addEventListener("click", () => {
+            if (projectSelectedSpan.textContent === project) {
+                return;
+            }
+
             deleteProject(project);
+            projectSelectDropdown.classList.remove("open");
         });
 
         projectSelectDropdownItem.appendChild(projectSelectDropdownItemSpan);
+        projectSelectDropdownItem.appendChild(projectSelectDropdownItemExportButton);
         projectSelectDropdownItem.appendChild(projectSelectDropdownItemDeleteButton);
 
         projectSelectDropdown.appendChild(projectSelectDropdownItem);
@@ -81,7 +95,3 @@ export function selectedProjectListener(e) {
     projectSelectedSpan.textContent = e.payload;
 }
 
-function hisToMs(timeString) {
-    const [hours, minutes, seconds] = timeString.split(':').map(Number);
-    return hours * 3600 + minutes * 60 + (seconds * 1000);
-}

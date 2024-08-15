@@ -48,6 +48,7 @@ export function showProjectDropdown() {
 
 export function createNewProjectFromProjectDropdown() {
     createNewProject(projectAddNewInput.value);
+    projectSelectDropdown.classList.remove("open");
 }
 
 export async function exitProgramAfterClick(state) {

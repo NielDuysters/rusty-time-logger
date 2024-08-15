@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Rusty Time Logger - Export %project_id%</title>
+
+        <style>
+            table {
+                border-collapse: collapse;
+                text-align: left;
+            }
+            table tr {
+                padding: 5px 0;
+            }
+            table td:not(:first-child), table th:not(:first-child) {
+                padding: 0 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Export %project_id%</h1>
+        <h2>Total time: %total_time_spent%</h2>
+
+        <h2>Time per task</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                %tbody_time_per_task%
+            </tbody>
+        </table>
+
+        <h2>Log</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Task</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                %tbody_tasks_log%
+            </tbody>
+        </table>
+    </body>
+</html>

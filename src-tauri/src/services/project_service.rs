@@ -2,17 +2,18 @@ use tauri::Manager;
 use super::super::config;
 use std::io::prelude::*;
 use std::fs::OpenOptions;
-use super::super::utils::project;
+use super::super::utils::{project, csv, export};
+use chrono::{NaiveTime, Timelike};
 
 pub struct Project {
-    id: String,
+    pub id: String,
     path: std::path::PathBuf,
 }
 
 impl Project {
     pub fn new(id: &str) -> Self {
         Self {
-            id: id.to_string(),
+            id: id.to_string().to_uppercase(),
             path: config::RUSTY_TIME_LOGGER_PATH.clone().join("timelogs").join(id.to_uppercase()),
         }
     }
@@ -57,6 +58,49 @@ impl Project {
 
         Ok(())
     }
+
+    pub fn export(&self) -> Result<(), String> {
+        export::export_to_html(&self);
+        Ok(())
+    }
+
+    pub fn total_seconds_spent(&self) -> Result<u32, String> {
+        let mut total = 0;
+        for task in self.tasks().unwrap() {
+            let time_str = task.get(3).unwrap();
+            if let Ok(naive_time) = NaiveTime::parse_from_str(time_str, "%H:%M:%S") {
+                let seconds = naive_time.hour() * 3600 + naive_time.minute() * 60 + naive_time.second();
+                total += seconds;
+            } else {
+                eprintln!("Failed to parse time: {}", time_str);
+            }
+        }
+
+        Ok(total)
+    }
+
+    pub fn seconds_spent_per_task(&self) -> Result<std::collections::HashMap<String, u32>, String> {
+        let mut seconds_per_task : std::collections::HashMap<String, u32> = std::collections::HashMap::new();
+
+        for task in self.tasks().unwrap() {
+            let task_description = task.get(2).unwrap();
+            let task_id = task_description.split(" - ").next().unwrap_or(task_description);
+            let time_str = task.get(3).unwrap();
+            if let Ok(naive_time) = NaiveTime::parse_from_str(time_str, "%H:%M:%S") {
+                let seconds = naive_time.hour() * 3600 + naive_time.minute() * 60 + naive_time.second();
+                let entry = seconds_per_task.entry(task_id.to_string()).or_insert(0);
+                *entry += seconds;
+            } else {
+                eprintln!("Failed to parse time: {}", time_str);
+            }
+        }
+
+        Ok(seconds_per_task)
+    }
+
+    pub fn tasks(&self) -> Result<std::vec::Vec<std::vec::Vec<String>>, String> {
+        csv::read(&self.id)
+    }
 }
 
 pub fn refresh(app_handle: &tauri::AppHandle) -> Result<(), String> {
@@ -71,8 +115,8 @@ pub fn refresh(app_handle: &tauri::AppHandle) -> Result<(), String> {
     }
     
     let project_files_json = serde_json::to_string(&project_files).expect("Failed to serialize project files");
-    app_handle.emit_all("project_list", project_files_json).expect("Failed to emit project list");
-    app_handle.emit_all("selected_project", project::get_selected_project()?).expect("Failed to emit selected project");
+    app_handle.emit_all("project_list", project_files_json).expect("Failed to emit_all project list");
+    app_handle.emit_all("selected_project", project::get_selected_project()?).expect("Failed to emit_all selected project");
 
     Ok(())
 }

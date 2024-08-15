@@ -37,7 +37,7 @@ pub fn refresh(app_handle: &tauri::AppHandle) -> Result<(), String> {
         Err(_) => return Err("Error reading tasks from project file".to_string()),
     };
     if let Err(_) = app_handle.emit_all("finished_tasks", tasks_json) {
-        return Err("Failed to emit tasks".to_string());
+        return Err("Failed to emit_all tasks".to_string());
     };
 
     Ok(())

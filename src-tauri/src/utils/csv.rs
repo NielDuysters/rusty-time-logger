@@ -2,6 +2,7 @@ use std::fs::OpenOptions;
 use std::io::prelude::*;
 
 use super::super::config;
+use super::super::utils::time;
 
 pub fn save(project_id: &str, row_id: &str, date: &str, task_description: &str, seconds: u64) -> std::io::Result<()> {
     let csv_file_path = config::RUSTY_TIME_LOGGER_PATH.join("timelogs").join(project_id.to_uppercase());
@@ -13,10 +14,7 @@ pub fn save(project_id: &str, row_id: &str, date: &str, task_description: &str, 
         .create(true)
         .open(csv_file_path)?;
 
-    let hours = seconds / 3600;
-    let minutes = (seconds % 3600) / 60;
-    let seconds = seconds % 60;
-    let time_string = format!("{:02}:{:02}:{:02}", hours, minutes, seconds);
+    let time_string = time::seconds_to_his(seconds as u32);
 
     writeln!(csv_file, "{},{},{},{}", row_id, date, task_description, time_string)?;
 

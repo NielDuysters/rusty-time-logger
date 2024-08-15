@@ -1,5 +1,10 @@
 import { timeSpan, totalTimeSpentSpan, finishedTasksTable, projectSelectDropdown, projectSelectedSpan } from "./dom-elements.js";
 
+export function hisToMs(timeString) {
+    const [hours, minutes, seconds] = timeString.split(':').map(Number);
+    return (hours * 3600 + minutes * 60 + seconds) * 1000;
+}
+
 function msToHis(ms) {
     const totalSeconds = Math.floor(ms / 1000);
 
