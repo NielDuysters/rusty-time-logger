@@ -27,7 +27,6 @@ impl Task {
     pub fn delete(&self) -> Result<(), String> {
         csv::delete(project::get_selected_project()?.as_str(), &self.id)
     }
-    
 }
 
 pub fn refresh(app_handle: &tauri::AppHandle) -> Result<(), String> {

@@ -59,7 +59,6 @@ pub fn delete(project_id: &str, task_id: &str) -> Result<(), String> {
     };
     let mut writer = std::io::BufWriter::new(temp_file);
 
-
     for line in reader.lines() {
         match line {
             Ok(content) => {

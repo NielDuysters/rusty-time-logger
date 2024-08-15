@@ -48,7 +48,7 @@ pub fn select_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<
 }
 
 #[tauri::command]
-pub fn export_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<(), String> {
+pub fn export_project(project_id: &str) -> Result<(), String> {
     let project = project_service::Project::new(project_id);
     let export = project.export();
     
