@@ -52,10 +52,10 @@ pub fn delete(project_id: &str, task_id: &str) -> Result<(), String> {
     };
     let reader = std::io::BufReader::new(csv_file);
 
-    let temp_file_path = config::RUSTY_TIME_LOGGER_PATH.join(".").join(project_id.to_uppercase()).join(".tmp");
+    let temp_file_path = config::RUSTY_TIME_LOGGER_PATH.join("timelogs").join(format!(".{}.tmp", project_id.to_uppercase()));
     let temp_file = match std::fs::File::create(temp_file_path.clone()) {
         Ok(file) => file,
-        Err(_) => return Err("Could not create temporary file to delete".to_string()),
+        Err(e) => return Err(format!("Could not create temporary file to delete {}", e)),
     };
     let mut writer = std::io::BufWriter::new(temp_file);
 
