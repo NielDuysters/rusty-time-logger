@@ -155,7 +155,6 @@ body {
     background-color: #2F2A2A;
     margin-top: 50px;
     overflow-y: auto;
-    flex-grow: 1;
     padding-bottom: 50px;
     padding-left: 10%;
     padding-right: 10%;
@@ -164,6 +163,9 @@ body {
     border-top-right-radius: 25px;
     box-sizing: border-box;
     min-height: 150px;
+}
+#finished-tasks-table span:not(.table-header) {
+    padding: 5px 0;
 }
 
 #finished-tasks-table .table-header {
