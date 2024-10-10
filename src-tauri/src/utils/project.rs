@@ -1,5 +1,5 @@
-use std::io::prelude::*;
 use super::super::config;
+use std::io::prelude::*;
 
 pub fn new_project_if_none() -> std::io::Result<()> {
     match std::fs::read_dir((*config::RUSTY_TIME_LOGGER_PATH).join("timelogs")) {
@@ -7,7 +7,7 @@ pub fn new_project_if_none() -> std::io::Result<()> {
             if dir.next().is_some() {
                 return Ok(());
             }
-        },
+        }
         Err(_) => {}
     }
 

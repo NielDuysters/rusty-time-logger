@@ -1,4 +1,4 @@
-const { invoke } = window.__TAURI__.tauri;
+const { invoke } = window.__TAURI__.core;
 const { message } = window.__TAURI__.dialog;
 
 export async function save(ms, description) {
@@ -11,11 +11,10 @@ export async function deleteTask(taskId) {
 
 export async function createNewProject(projectId) {
      try {
-      // message("New project created succesfully.");
         await invoke("create_new_project", { projectId });
-       // await loadProjects();
+        await message(`Project ${projectId} created.`, { title: 'Rusty Time Logger', kind: 'info' });
     } catch (error) {
-        //await message(error);
+        await message(`Error creating project ${projectId}: ${error.message}`, { title: 'Rusty Time Logger', kind: 'error' });
         return;
     }
 
@@ -25,15 +24,19 @@ export async function createNewProject(projectId) {
 export async function deleteProject(projectId) {
     try {
         await invoke("delete_project", { projectId });
-//        await message("Project deleted.");
+        await message(`Project ${projectId} deleted.`, { title: 'Rusty Time Logger', kind: 'info' });
     } catch (error) {
-       // await message(error);
+        await message(`Error deleting project ${projectId}: ${error.message}`, { title: 'Rusty Time Logger', kind: 'error' });
     }
 }
 
 export async function exportProject(projectId) {
-    await invoke("export_project", { projectId });
- //   await message("Project exported.");
+    try {
+        await invoke("export_project", { projectId });
+        await message(`Project ${projectId} exported.`, { title: 'Rusty Time Logger', kind: 'info' });
+    } catch (error) {
+        await message(`Error exporting project ${projectId}: ${error.message}`, { title: 'Rusty Time Logger', kind: 'error' });
+    }
 }
 
 export async function loadProjects() {

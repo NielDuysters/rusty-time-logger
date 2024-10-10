@@ -1,7 +1,7 @@
+const { message } = window.__TAURI__.dialog;
 import { timeSpan, totalTimeSpentSpan, finishedTasksTable, projectSelectDropdown, projectSelectedSpan } from "./dom-elements.js";
 import { deleteProject, exportProject, selectProject, deleteTask } from "./rust-bindings.js";
 import { displayTotalTimeSpent, hisToMs } from "./utils.js";
-const { message } = window.__TAURI__.dialog;
 
 export function finishedTasksListener(e, state) {
     let tasks = JSON.parse(e.payload).reverse();
@@ -9,7 +9,6 @@ export function finishedTasksListener(e, state) {
     finishedTasksTable.innerHTML = "<span class='table-header'>Day</span><span class='table-header'>Task description</span><span class='table-header'>Time spent</span><span class='table-header'></span>";
     state.totalMilliSecondsSpent = 0;
     tasks.forEach((row) => {
-
         let spanDate = document.createElement("span");
         spanDate.textContent = row[1];
 
@@ -76,6 +75,7 @@ export function projectListListener(e) {
         projectSelectDropdownItemDeleteButton.textContent = "DEL";
         projectSelectDropdownItemDeleteButton.addEventListener("click", () => {
             if (projectSelectedSpan.textContent === project) {
+                message("Can't delete currently active project.", { title: 'Rusty Time Logger', kind: 'warning' });
                 return;
             }
 

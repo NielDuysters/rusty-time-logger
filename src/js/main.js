@@ -1,6 +1,5 @@
-const { message } = window.__TAURI__.dialog;
 const { listen } = window.__TAURI__.event;
-const { invoke } = window.__TAURI__.tauri;
+const { invoke } = window.__TAURI__.core;
 
 import { save, deleteTask, createNewProject, deleteProject, loadProjects, selectProject, exitProgram } from "./rust-bindings.js";
 import { togglePlayPause, saveTask, showProjectDropdown, createNewProjectFromProjectDropdown, exitProgramAfterClick } from "./event-functions.js";
@@ -44,7 +43,7 @@ window.addEventListener("DOMContentLoaded", () => {
     setTimeout(function() {
         invoke("update_finished_tasks");
         loadProjects();
-    },50);
+    }, 50);
 
     listen("project_list", (event) => {
         projectListListener(event);

@@ -1,4 +1,4 @@
-use super::services::{project_service, task_service, action_service};
+use super::services::{action_service, project_service, task_service};
 
 #[tauri::command]
 pub fn save(ms: u64, description: &str, app_handle: tauri::AppHandle) -> Result<(), String> {
@@ -15,7 +15,7 @@ pub fn delete_task(task_id: &str, app_handle: tauri::AppHandle) -> Result<(), St
     let task = task_service::Task::new(task_id);
     let delete = task.delete();
     task_service::refresh(&app_handle)?;
-    
+
     delete
 }
 
@@ -24,7 +24,7 @@ pub fn create_new_project(project_id: &str, app_handle: tauri::AppHandle) -> Res
     let project = project_service::Project::new(project_id);
     let create = project.create();
     project_service::refresh(&app_handle)?;
-    
+
     create
 }
 
@@ -33,7 +33,7 @@ pub fn delete_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<
     let project = project_service::Project::new(project_id);
     let delete = project.delete();
     project_service::refresh(&app_handle)?;
-    
+
     delete
 }
 
@@ -43,7 +43,7 @@ pub fn select_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<
     let select = project.select();
     project_service::refresh(&app_handle)?;
     task_service::refresh(&app_handle)?;
-    
+
     select
 }
 
@@ -51,7 +51,7 @@ pub fn select_project(project_id: &str, app_handle: tauri::AppHandle) -> Result<
 pub fn export_project(project_id: &str) -> Result<(), String> {
     let project = project_service::Project::new(project_id);
     let export = project.export();
-    
+
     export
 }
 
