@@ -23,7 +23,7 @@ Export project log
 
 ## Technical specifications
 - Rust (1.79.0)
-- Tauri (1.7.1)
+- Tauri (2.0.2)
 - Developed on UNIX
 
 ## Installation
@@ -31,6 +31,7 @@ Prerequisites:
 - Rust
 - Tauri
 - Tauri-cli
+- NodeJS
 
 ```
 # Clone repository
@@ -47,7 +48,6 @@ cp -r "src-tauri/target/release/bundle/macos/Rusty Time Logger.app" /Application
 
 
 ## TODO
-- Fix Tuari dialog issue [(View issue)](https://github.com/tauri-apps/tauri/issues/10586#issue-2462152966)
 - Use SQLite instead of CSV
 - Code improvements and best practices
 
