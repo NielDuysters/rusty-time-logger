@@ -48,7 +48,11 @@ cp -r "src-tauri/target/release/bundle/macos/Rusty Time Logger.app" /Application
 
 
 ## TODO
-- Use SQLite instead of CSV
-- Code improvements and best practices
+- Use SQLite instead of CSV (priority)
+- Code improvements and best practices (priority)
+- Add styling to project export (priority)
+- Remember time of inactivity of user and ask to subtract inactive time for task time when user returns
+- Send email when user is inactive but timer is still running
+- Integration with Jira and Github-Projects
 
 This was a hobby-project. So feedback is always appreciated!
