@@ -2,7 +2,8 @@ const { invoke } = window.__TAURI__.core;
 const { message } = window.__TAURI__.dialog;
 
 export async function save(ms, description) {
-    await invoke("save", {ms, description });
+    //await invoke("save", {ms, description });
+    await invoke("test_github_client");
 }
 
 export async function deleteTask(taskId) {
