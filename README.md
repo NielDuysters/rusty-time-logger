@@ -10,6 +10,7 @@ I do some freelance web-development and needed a basic and easy-to-use project t
 - Save a finished task with a custom description.
 - Export project log to a HTML table.
 - View total time spent, time spent per task and a full log of the workflow.
+- Sync spent time to tickets on Github Project board.
 
 ## Screenshots
 Interface
@@ -53,6 +54,6 @@ cp -r "src-tauri/target/release/bundle/macos/Rusty Time Logger.app" /Application
 - Add styling to project export (priority)
 - Remember time of inactivity of user and ask to subtract inactive time for task time when user returns
 - Send email when user is inactive but timer is still running
-- Integration with Jira and Github-Projects
-
+- Integration with Jira (integration with Github is done)
+  
 This was a hobby-project. So feedback is always appreciated!
