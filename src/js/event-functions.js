@@ -1,5 +1,5 @@
-import { save, exitProgram, createNewProject } from "./rust-bindings.js";
-import { saveButton, playButton, taskDescriptionInput, projectSelectDropdown, projectAddNewInput } from "./dom-elements.js";
+import { save, exitProgram, createNewProject, saveGithubSettings, syncGithub } from "./rust-bindings.js";
+import { saveButton, playButton, taskDescriptionInput, projectSelectDropdown, projectAddNewInput, githubSettingsDropdown, projectSelectedSpan } from "./dom-elements.js";
 import { displayTaskTimeSpent, displayTotalTimeSpent } from "./utils.js";
 
 export function togglePlayPause(e, state) {
@@ -31,7 +31,7 @@ export function togglePlayPause(e, state) {
 }
 
 export function saveTask(state) {
-    save(state.taskMilliSecondsSpent, taskDescriptionInput.value);
+    save(projectSelectedSpan.textContent, state.taskMilliSecondsSpent, taskDescriptionInput.value);
     state.taskMilliSecondsSpent = 0;
     saveButton.classList.remove("visible");
     playButton.src = "assets/play-button.png";
@@ -49,6 +49,21 @@ export function showProjectDropdown() {
 export function createNewProjectFromProjectDropdown() {
     createNewProject(projectAddNewInput.value);
     projectSelectDropdown.classList.remove("open");
+}
+
+export function showGithubSettingsDropdown() {
+    githubSettingsDropdown.classList.toggle("open");
+}
+
+export function saveGithubSettingsAfterClick() {
+    saveGithubSettings(
+        projectSelectedSpan.textContent,
+        githubSettingsDropdown.querySelector("#github-auth-token").value,
+        githubSettingsDropdown.querySelector("#github-project-url").value,
+        githubSettingsDropdown.querySelector("#github-spent-time-field-name").value,
+        githubSettingsDropdown.querySelector("#github-timelog-ticket-nr").value,
+    ) 
+    githubSettingsDropdown.classList.remove("open");
 }
 
 export async function exitProgramAfterClick(state) {

@@ -2,10 +2,9 @@ const { listen } = window.__TAURI__.event;
 const { invoke } = window.__TAURI__.core;
 
 import { save, deleteTask, createNewProject, deleteProject, loadProjects, selectProject, exitProgram } from "./rust-bindings.js";
-import { togglePlayPause, saveTask, showProjectDropdown, createNewProjectFromProjectDropdown, exitProgramAfterClick } from "./event-functions.js";
-import { playButton, saveButton, projectSelectedSpan, projectAddNewButton, exitButton } from "./dom-elements.js";
-import { finishedTasksListener, projectListListener, selectedProjectListener } from "./rust-listeners.js";
-
+import { togglePlayPause, saveTask, showProjectDropdown, showGithubSettingsDropdown, createNewProjectFromProjectDropdown, exitProgramAfterClick, saveGithubSettingsAfterClick } from "./event-functions.js";
+import { playButton, saveButton, projectSelectedSpan, projectAddNewButton, exitButton, githubSettingsButton, githubSettingsSaveButton } from "./dom-elements.js";
+import { finishedTasksListener, projectListListener, selectedProjectListener, projectGithubSettingsListener } from "./rust-listeners.js";
 
 window.addEventListener("DOMContentLoaded", () => {
     let state = {
@@ -32,6 +31,14 @@ window.addEventListener("DOMContentLoaded", () => {
         createNewProjectFromProjectDropdown();
     });
 
+    githubSettingsButton.addEventListener("click", () => {
+        showGithubSettingsDropdown();
+    });
+
+    githubSettingsSaveButton.addEventListener("click", () => {
+        saveGithubSettingsAfterClick()
+    })
+
     exitButton.addEventListener("click", () => {
         exitProgramAfterClick(state);
     });
@@ -52,4 +59,8 @@ window.addEventListener("DOMContentLoaded", () => {
     listen("selected_project", (event) => {
         selectedProjectListener(event);
     });
+
+    listen("project_config", (event) => {
+        projectGithubSettingsListener(event)
+    })
 });

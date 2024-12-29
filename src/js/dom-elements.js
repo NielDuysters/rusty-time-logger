@@ -12,4 +12,8 @@ export const projectAddNewButton = document.getElementById("project-add-new-butt
 export const projectSelectDropdown = document.getElementById("project-select-dropdown");
 export const projectAddNewInput = document.getElementById("project-add-new-input");
 
+export const githubSettingsButton = document.getElementById("github-settings-button");
+export const githubSettingsDropdown = document.getElementById("github-settings-dropdown");
+export const githubSettingsSaveButton = document.getElementById("github-settings-save-button");
+
 export const exitButton = document.getElementById("exit");

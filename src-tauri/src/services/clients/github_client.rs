@@ -1,3 +1,4 @@
+use crate::config::GITHUB_PROJECT_API_URL;
 use super::{graphql_client::{GraphQLClient, GraphQLQuery}, pm_client::PmClient};
 use serde_json::json;
 use std::collections::HashMap;
@@ -6,6 +7,7 @@ pub struct GitHubClient {
     graphql_client: GraphQLClient,
     organization: String,
     project_number: u8,
+    spent_time_field_name: String,
 }
 
 impl GitHubClient {
@@ -119,12 +121,11 @@ impl PmClient for GitHubClient {
         let mut variables = HashMap::new();
         variables.insert("projectId".to_string(), json!(project_id));
         variables.insert("itemId".to_string(), json!(self.get_ticket_id(&project_id, ticket_id.parse().unwrap()).await.unwrap()));
-        variables.insert("fieldId".to_string(), json!(self.get_field_id(&project_id, "spent time").await.unwrap()));
+        variables.insert("fieldId".to_string(), json!(self.get_field_id(&project_id,  &self.spent_time_field_name).await.unwrap()));
         variables.insert("value".to_string(), json!(time));
         
         match self.graphql_client.execute(GraphQLQuery::UpdateSpentTime, Some(variables)).await {
-            Ok(response) => {
-                println!("Response: {:?}", response);
+            Ok(_) => {
                 Ok(())
             }
             Err(err) => Err(format!("Error executing GraphQL query: {}", err)),
@@ -136,13 +137,14 @@ impl PmClient for GitHubClient {
 pub struct GitHubClientBuilder {
     organization: String,
     project_number: u8,
+    spent_time_field_name: String,
     auth_token: Option<String>,
 }
 
 impl GitHubClientBuilder {
     fn graphql_client(&mut self) -> GraphQLClient {
         GraphQLClient::builder()
-        .endpoint("https://api.github.com/graphql")
+        .endpoint(&GITHUB_PROJECT_API_URL.to_string())
         .client(
             reqwest::Client::builder()
             .default_headers({
@@ -173,11 +175,17 @@ impl GitHubClientBuilder {
         self
     }
 
+    pub fn spent_time_field_name(mut self, spent_time_field_name: &str) -> Self {
+        self.spent_time_field_name = spent_time_field_name.to_string();
+        self
+    }
+
     pub fn build(mut self) -> Result<GitHubClient, &'static str> {
         Ok(GitHubClient {
             graphql_client: self.graphql_client(),
             organization: self.organization,
             project_number: self.project_number,
+            spent_time_field_name: self.spent_time_field_name,
         })
     }
 }

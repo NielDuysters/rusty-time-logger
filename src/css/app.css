@@ -5,7 +5,7 @@ body {
 
 #top-bar {
     display: grid;
-    grid-template-columns: 200px 1fr 80px;
+    grid-template-columns: 200px 1fr 120px 80px;
 }
 
 #top-bar .top-bar-section {
@@ -24,6 +24,9 @@ body {
 
 #project-selected {
     display: block;
+    white-space: nowrap;
+    padding: 0 3px;
+    overflow: hidden;
 }
 
 #project-select-dropdown {
@@ -42,8 +45,13 @@ body {
 
 #project-select-dropdown .project-select-dropdown-item {
     display: grid;
-    grid-template-columns: 1fr 85px 50px;
+    grid-template-columns: 1fr 85px 65px 50px;
     background-color: #AEB404;
+}
+
+#project-select-dropdown .project-select-dropdown-item.selected {
+    background-color: #FF8800;
+    font-weight: 600;
 }
 
 #project-select-dropdown .project-select-dropdown-item:first-child {
@@ -62,6 +70,37 @@ body {
     text-overflow: ellipsis;
 }
 
+#github-settings-container {
+    position: relative;
+    cursor: default;
+}
+
+#github-settings-dropdown {
+    position: absolute;
+    left: -160px;
+    text-align: left;
+    height: 0;
+    overflow: hidden;
+}
+
+#github-settings-dropdown.open {
+    height: auto;
+    max-height: 200px;
+    overflow-y: scroll;
+}
+
+#github-settings-dropdown input {
+    overflow: hidden;
+    width: 170px;
+    color: #A4A4A4;
+}
+
+#github-settings-save-button {
+    background-color: #FF8000;
+    padding: 5px 10px;
+    display: inline-block;
+}
+
 #project-add-new-button {
     background-color: #298A08;
 }
@@ -72,6 +111,10 @@ body {
 
 .project-delete-button {
     background-color: #FF0000;
+}
+
+.project-github-sync-button {
+    background-color: #A4A4A4;
 }
 
 #project-select-dropdown .project-select-dropdown-item#project-add-new-container {
@@ -98,7 +141,6 @@ body {
 }
 
 #task-description-input {
-    text-align: center;
     width: 100%;
     margin-left: 10px
 }

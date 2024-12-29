@@ -1,14 +1,15 @@
-use super::super::utils::{csv, project};
+use super::{super::utils::{csv, project}, project_service::Project};
 use chrono::prelude::*;
 use tauri::Emitter;
 
 pub struct Task {
     id: String,
+    project: Project,
 }
 
 impl Task {
-    pub fn new(id: &str) -> Self {
-        Self { id: id.to_string() }
+    pub fn new(id: &str, project: Project) -> Self {
+        Self { id: id.to_string(), project }
     }
 
     pub fn create(&self, task_description: &str, seconds: u64) -> Result<(), String> {
@@ -16,7 +17,7 @@ impl Task {
         let date_str = today.format("%e %B").to_string();
 
         if let Err(_) = csv::save(
-            project::get_selected_project()?.as_str(),
+            self.project.id.as_str(),
             &self.id,
             &*date_str,
             task_description,
@@ -29,7 +30,7 @@ impl Task {
     }
 
     pub fn delete(&self) -> Result<(), String> {
-        csv::delete(project::get_selected_project()?.as_str(), &self.id)
+        csv::delete(self.project.id.as_str(), &self.id)
     }
 }
 

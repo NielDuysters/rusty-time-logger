@@ -10,7 +10,6 @@ pub enum GraphQLQuery {
     UpdateSpentTime,
 }
 
-
 #[derive(Default)]
 pub struct GraphQLClient {
     endpoint: String,

@@ -1,6 +1,6 @@
 const { message } = window.__TAURI__.dialog;
-import { timeSpan, totalTimeSpentSpan, finishedTasksTable, projectSelectDropdown, projectSelectedSpan } from "./dom-elements.js";
-import { deleteProject, exportProject, selectProject, deleteTask } from "./rust-bindings.js";
+import { timeSpan, totalTimeSpentSpan, finishedTasksTable, projectSelectDropdown, projectSelectedSpan, githubSettingsDropdown } from "./dom-elements.js";
+import { deleteProject, exportProject, selectProject, deleteTask, syncGithub } from "./rust-bindings.js";
 import { displayTotalTimeSpent, hisToMs } from "./utils.js";
 
 export function finishedTasksListener(e, state) {
@@ -32,7 +32,7 @@ export function finishedTasksListener(e, state) {
             });
         deleteButtonImage
             .addEventListener("click", () => {
-                deleteTask(row[0]);
+                deleteTask(projectSelectedSpan.textContent, row[0]);
             });
         spanDeleteButton.appendChild(deleteButtonImage);
 
@@ -54,6 +54,7 @@ export function projectListListener(e) {
     projects.forEach((project) => {
         let projectSelectDropdownItem = document.createElement("div");
         projectSelectDropdownItem.classList.add("project-select-dropdown-item");
+        projectSelectDropdownItem.setAttribute("data-project-name", project.toLowerCase().replace(' ', '-'));
 
         let projectSelectDropdownItemSpan = document.createElement("span");
         projectSelectDropdownItemSpan.textContent = project;
@@ -67,6 +68,14 @@ export function projectListListener(e) {
         projectSelectDropdownItemExportButton.textContent = "EXPORT";
         projectSelectDropdownItemExportButton.addEventListener("click", () => {
             exportProject(project);
+            projectSelectDropdown.classList.remove("open");
+        });
+
+        let projectSelectDropdownItemGithubSyncButton = document.createElement("div");
+        projectSelectDropdownItemGithubSyncButton.classList.add("project-github-sync-button");
+        projectSelectDropdownItemGithubSyncButton.textContent = "SYNC";
+        projectSelectDropdownItemGithubSyncButton.addEventListener("click", () => {
+            syncGithub(project);
             projectSelectDropdown.classList.remove("open");
         });
 
@@ -85,6 +94,7 @@ export function projectListListener(e) {
 
         projectSelectDropdownItem.appendChild(projectSelectDropdownItemSpan);
         projectSelectDropdownItem.appendChild(projectSelectDropdownItemExportButton);
+        projectSelectDropdownItem.appendChild(projectSelectDropdownItemGithubSyncButton);
         projectSelectDropdownItem.appendChild(projectSelectDropdownItemDeleteButton);
 
         projectSelectDropdown.appendChild(projectSelectDropdownItem);
@@ -93,5 +103,15 @@ export function projectListListener(e) {
 
 export function selectedProjectListener(e) {
     projectSelectedSpan.textContent = e.payload;
+    projectSelectDropdown.querySelectorAll(".selected").forEach(element => element.classList.remove("selected"));
+    projectSelectDropdown.querySelector(`[data-project-name="${e.payload.toLowerCase().replace(' ', '-')}"]`).classList.add("selected");
 }
 
+export function projectGithubSettingsListener(e) {
+    let settings = JSON.parse(e.payload)
+
+    githubSettingsDropdown.querySelector("#github-auth-token").value = settings.auth_token
+    githubSettingsDropdown.querySelector("#github-project-url").value = settings.project_url
+    githubSettingsDropdown.querySelector("#github-spent-time-field-name").value = settings.spent_time_field_name
+    githubSettingsDropdown.querySelector("#github-timelog-ticket-nr").value = settings.timelog_ticket_nr
+}
