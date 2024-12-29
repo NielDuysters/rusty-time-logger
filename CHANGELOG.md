@@ -1,3 +1,6 @@
+# 3.0.0
+- User can now sync the spent time on tickets to a Github Project board
+
 # 2.0.1
 - Fixed project name from lowercase (rustytimelogger) to PascalCase (Rusty Time Logger)
 - Removed unused icon 128x128@2.png
