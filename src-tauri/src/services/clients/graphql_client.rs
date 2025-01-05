@@ -4,7 +4,8 @@ use serde_json::json;
 #[derive(strum::Display)]
 #[strum(serialize_all = "snake_case")]
 pub enum GraphQLQuery {
-    GetProjectId,
+    GetProjectIdByOrganization,
+    GetProjectIdByUser,
     GetTicketId,
     GetFieldId,
     UpdateSpentTime,

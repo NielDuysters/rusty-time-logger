@@ -3,9 +3,20 @@ use super::{graphql_client::{GraphQLClient, GraphQLQuery}, pm_client::PmClient};
 use serde_json::json;
 use std::collections::HashMap;
 
+pub enum GitHubProjectOwner {
+    Organization(String),
+    User(String),
+}
+
+impl Default for GitHubProjectOwner {
+    fn default() -> Self {
+        GitHubProjectOwner::Organization("".to_string())
+    }
+}
+
 pub struct GitHubClient {
     graphql_client: GraphQLClient,
-    organization: String,
+    project_owner: GitHubProjectOwner,
     project_number: u8,
     spent_time_field_name: String,
 }
@@ -17,17 +28,26 @@ impl GitHubClient {
 
     async fn get_project_id(&self) -> Result<String, String> {
         let mut variables = HashMap::new();
-        variables.insert("organization".to_string(), json!(self.organization));
+        let (query, owner_field) = match self.project_owner {
+            GitHubProjectOwner::Organization(ref organization) => {
+                variables.insert("organization".to_string(), json!(organization));
+                (GraphQLQuery::GetProjectIdByOrganization, "organization")
+            }
+            GitHubProjectOwner::User(ref user) => {
+                variables.insert("user".to_string(), json!(user));
+                (GraphQLQuery::GetProjectIdByUser, "user")
+            }
+        };
         variables.insert("projectNumber".to_string(), json!(self.project_number));
 
-        match self.graphql_client.execute(GraphQLQuery::GetProjectId, Some(variables)).await {
+        match self.graphql_client.execute(query, Some(variables)).await {
             Ok(response) => {
                 let response_json: serde_json::Value = serde_json::from_str(&response)
                     .map_err(|e| format!("Error parsing response: {}", e))?;
                 let project_id = response_json
                     .get("data")
-                    .and_then(|data| data.get("organization"))
-                    .and_then(|org| org.get("projectV2"))
+                    .and_then(|data| data.get(owner_field))
+                    .and_then(|po| po.get("projectV2"))
                     .and_then(|proj| proj.get("id"))
                     .and_then(|id| id.as_str())
                     .map(|id| id.to_string())
@@ -135,7 +155,7 @@ impl PmClient for GitHubClient {
 
 #[derive(Default)]
 pub struct GitHubClientBuilder {
-    organization: String,
+    project_owner: GitHubProjectOwner,
     project_number: u8,
     spent_time_field_name: String,
     auth_token: Option<String>,
@@ -161,7 +181,12 @@ impl GitHubClientBuilder {
     }
 
     pub fn organization(mut self, organization: &str) -> Self {
-        self.organization = organization.to_string();
+        self.project_owner = GitHubProjectOwner::Organization(organization.to_string());
+        self
+    }
+
+    pub fn user(mut self, user: &str) -> Self {
+        self.project_owner = GitHubProjectOwner::User(user.to_string());
         self
     }
 
@@ -183,7 +208,7 @@ impl GitHubClientBuilder {
     pub fn build(mut self) -> Result<GitHubClient, &'static str> {
         Ok(GitHubClient {
             graphql_client: self.graphql_client(),
-            organization: self.organization,
+            project_owner: self.project_owner,
             project_number: self.project_number,
             spent_time_field_name: self.spent_time_field_name,
         })

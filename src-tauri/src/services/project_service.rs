@@ -8,7 +8,7 @@ use std::fs::OpenOptions;
 use std::io::prelude::*;
 use tauri::Emitter;
 use std::sync::{Arc, Mutex};
-use crate::utils::project_config::{get_github_issue_nr_from_task_description, get_github_organization_from_url};
+use crate::utils::project_config::{get_github_issue_nr_from_task_description, get_github_project_owner_from_url};
 use crate::utils::time::seconds_to_his;
 
 #[derive(Clone)]
@@ -94,13 +94,20 @@ impl Project {
 
     pub async fn sync_spent_time_to_pm(&self) -> Result<(), String> {
         let config = self.get_config()?;
-        let (organization, project_number) = get_github_organization_from_url(&config["project_url"].as_str().unwrap())?;
-        let client = GitHubClient::builder()
+        let project_url = config["project_url"].as_str().unwrap();
+        let (project_owner, project_number) = get_github_project_owner_from_url(project_url)?;
+        let mut builder = GitHubClient::builder()
             .auth_token(&config["auth_token"].as_str().unwrap())
-            .organization(organization.as_str())
             .project_number(project_number.parse().unwrap())
-            .spent_time_field_name(config["spent_time_field_name"].as_str().unwrap())
-            .build()
+            .spent_time_field_name(config["spent_time_field_name"].as_str().unwrap());
+
+        if project_url.contains("/orgs/") {
+            builder = builder.organization(&project_owner);
+        } else {
+            builder = builder.user(&project_owner);
+        }
+
+        let client = builder.build()
             .map_err(|e| e.to_string())?;
 
         let seconds_per_task = self.seconds_spent_per_task()?;

@@ -1,3 +1,7 @@
+# 3.0.1
+- Added support for Github Projects from users instead of only organizations
+- Bumped versions in package.json and Cargo.toml
+
 # 3.0.0
 - User can now sync the spent time on tickets to a Github Project board
 

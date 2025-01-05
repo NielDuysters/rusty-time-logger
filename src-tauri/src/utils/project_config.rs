@@ -1,16 +1,16 @@
 use regex::Regex;
 
-pub fn get_github_organization_from_url(url: &str) -> Result<(String, String), String> {
+pub fn get_github_project_owner_from_url(url: &str) -> Result<(String, String), String> {
     let url = url.trim_end_matches('/');
     let url_parts: Vec<&str> = url.split('/').collect();
     if url_parts.len() < 3 {
         return Err("Invalid URL".to_string());
     }
 
-    let organization = url_parts[url_parts.len() - 3];
+    let po = url_parts[url_parts.len() - 3];
     let project = url_parts[url_parts.len() - 1];
 
-    Ok((organization.to_string(), project.to_string()))
+    Ok((po.to_string(), project.to_string()))
 }
 
 pub fn get_github_issue_nr_from_task_description(task_description: &str) -> Result<String, String> {

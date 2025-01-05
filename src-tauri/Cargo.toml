@@ -1,6 +1,6 @@
 [package]
 name = "rusty-time-logger"
-version = "2.0.0"
+version = "3.0.1"
 description = "A basic project time tracker written in Rust."
 authors = ["Niel"]
 edition = "2021"
